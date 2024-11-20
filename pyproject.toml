@@ -1,0 +1,14 @@
+[project]
+name = "standardpaths"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Matthew J. Milner", email = "matterhorn103@proton.me" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
