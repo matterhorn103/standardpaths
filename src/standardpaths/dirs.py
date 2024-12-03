@@ -26,17 +26,37 @@ class StandardPaths:
             _win_programs = os.getenv("CSIDL_PROGRAMS")
             _win_tmp = os.getenv("TEMP")
 
-            _data = _xdg_data or _win_app_data or _win_local_app_data or "~/AppData/Local"
-            _config = _xdg_config or _win_local_app_data or _data
-            _state = _xdg_state or _win_local_app_data + "/State" or _data + "/State"
+            _data = _xdg_data or _win_app_data or "~/AppData/Roaming"
+            _local_data = _win_local_app_data or "~/AppData/Local"
+            _config = _xdg_config or _local_data
+            _state = _xdg_state or _local_data + "/State"
             _app = _win_programs or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
-            _cache = _xdg_cache or "~/AppData/Local/cache"
-            _runtime = _xdg_runtime or 
-            _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else []
-            _config_dirs = _xdg_config_dirs.split(":") if _xdg_config_dirs else []
+            _cache = _xdg_cache or  _local_data + "/cache"
+            _runtime = _xdg_runtime or _win_tmp or _local_data + "/Temp"
+            _data_dirs = [_data] + (
+                _xdg_data_dirs.split(";") if _xdg_data_dirs
+                else ["C:/ProgramData"]
+            )
+            _config_dirs = [_config] + (
+                _xdg_config_dirs.split(";") if _xdg_config_dirs
+                else ["C:/ProgramData"]
+            )
 
         case "darwin":
-            pass
+            _data = _xdg_data or "~/Library/Application Support"
+            _config = _xdg_config or "~/Library/Preferences"
+            _state = _xdg_state or "~/Library/Preferences/State"
+            _app = "/Applications"
+            _cache = _xdg_cache or "~/Library/Caches"
+            _runtime = _xdg_runtime or "~/Library/Application Support"
+            _data_dirs = [_data] + (
+                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                else ["/Library/Application Support"]
+            )
+            _config_dirs = [_config] + (
+                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                else []
+            )
 
         case "ios":
             pass
@@ -51,21 +71,46 @@ class StandardPaths:
             _app = "~/.local/bin"
             _cache = _xdg_cache or "~/.cache"
             _runtime = _xdg_runtime or f"/run/user/{os.getuid()}"
-            _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else ["/usr/local/share/", "/usr/share/"]
-            _config_dirs = _xdg_config_dirs.split(":") if _xdg_config_dirs else ["/etc/xdg"]
+            _data_dirs = [_data] + (
+                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                else ["/usr/local/share/", "/usr/share/"]
+            )
+            _config_dirs = [_config] + (
+                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                else ["/etc/xdg"]
+            )
 
         case _:
-            pass
+            # Same as Linux for now
+            _data = _xdg_data or "~/.local/share"
+            _config = _xdg_config or "~/.config"
+            _state = _xdg_state or "~/.local/state"
+            _app = "~/.local/bin"
+            _cache = _xdg_cache or "~/.cache"
+            _runtime = _xdg_runtime or f"/run/user/{os.getuid()}"
+            _data_dirs = [_data] + (
+                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                else ["/usr/local/share/", "/usr/share/"]
+            )
+            _config_dirs = [_config] + (
+                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                else ["/etc/xdg"]
+            )
     
     @classmethod
     def home(cls):
         return Path.home()
     
     @classmethod
-    def data(cls):
-        if isinstance(cls._data, str):
-            cls._data = Path(cls._data).expanduser()
-        return cls._data
+    def data(cls, local=False):
+        if local and sys.platform == "win32":
+            if isinstance(cls._local_data, str):
+                cls._local_data = Path(cls._local_data).expanduser()
+            return cls._local_data
+        else:
+            if isinstance(cls._data, str):
+                cls._data = Path(cls._data).expanduser()
+            return cls._data
     
     @classmethod
     def config(cls):
