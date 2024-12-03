@@ -18,7 +18,22 @@ class StandardPaths:
 
     match sys.platform:
         case "win32":
-            pass
+            # Windows environment variables
+            # See https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
+            _win_app_data = os.getenv("CSIDL_APPDATA")
+            _win_local_app_data = os.getenv("CSIDL_LOCAL_APPDATA")
+            _win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
+            _win_programs = os.getenv("CSIDL_PROGRAMS")
+            _win_tmp = os.getenv("TEMP")
+
+            _data = _xdg_data or _win_app_data or _win_local_app_data or "~/AppData/Local"
+            _config = _xdg_config or _win_local_app_data or _data
+            _state = _xdg_state or _win_local_app_data + "/State" or _data + "/State"
+            _app = _win_programs or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
+            _cache = _xdg_cache or "~/AppData/Local/cache"
+            _runtime = _xdg_runtime or 
+            _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else []
+            _config_dirs = _xdg_config_dirs.split(":") if _xdg_config_dirs else []
 
         case "darwin":
             pass
@@ -34,8 +49,8 @@ class StandardPaths:
             _config = _xdg_config or "~/.config"
             _state = _xdg_state or "~/.local/state"
             _app = "~/.local/bin"
-            _cache = _xdg_cache or "~/.local/share"
-            _runtime = _xdg_runtime or "~/.local/share"
+            _cache = _xdg_cache or "~/.cache"
+            _runtime = _xdg_runtime or f"/run/user/{os.getuid()}"
             _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else ["/usr/local/share/", "/usr/share/"]
             _config_dirs = _xdg_config_dirs.split(":") if _xdg_config_dirs else ["/etc/xdg"]
 
