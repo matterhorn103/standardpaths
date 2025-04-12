@@ -15,6 +15,15 @@ class StandardPaths:
     _xdg_runtime = os.getenv("XDG_RUNTIME_HOME")
     _xdg_data_dirs = os.getenv("XDG_DATA_DIRS")
     _xdg_config_dirs = os.getenv("XDG_CONFIG_DIRS")
+    
+    _xdg_default_data = "~/.local/share"
+    _xdg_default_config = "~/.config"
+    _xdg_default_state = "~/.local/state"
+    _xdg_default_app = "~/.local/bin"
+    _xdg_default_cache = "~/.cache"
+    _xdg_default_runtime = f"/run/user/{os.getuid()}"
+    _xdg_default_data_dirs = ["/usr/local/share/", "/usr/share/"]
+    _xdg_default_config_dirs = ["/etc/xdg"]
 
     match sys.platform:
         case "win32":
@@ -33,11 +42,11 @@ class StandardPaths:
             _app = _win_programs or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
             _cache = _xdg_cache or  _local_data + "/cache"
             _runtime = _xdg_runtime or _win_tmp or _local_data + "/Temp"
-            _data_dirs = [_data] + (
+            _data_dirs = (
                 _xdg_data_dirs.split(";") if _xdg_data_dirs
                 else ["C:/ProgramData"]
             )
-            _config_dirs = [_config] + (
+            _config_dirs = (
                 _xdg_config_dirs.split(";") if _xdg_config_dirs
                 else ["C:/ProgramData"]
             )
@@ -49,52 +58,54 @@ class StandardPaths:
             _app = "/Applications"
             _cache = _xdg_cache or "~/Library/Caches"
             _runtime = _xdg_runtime or "~/Library/Application Support"
-            _data_dirs = [_data] + (
+            _data_dirs = (
                 _xdg_data_dirs.split(":") if _xdg_data_dirs
                 else ["/Library/Application Support"]
             )
-            _config_dirs = [_config] + (
+            _config_dirs = (
                 _xdg_config_dirs.split(":") if _xdg_config_dirs
                 else []
             )
 
         case "ios":
+            # TODO
             pass
 
         case "android":
+            # TODO
             pass
 
         case "linux":
-            _data = _xdg_data or "~/.local/share"
-            _config = _xdg_config or "~/.config"
-            _state = _xdg_state or "~/.local/state"
-            _app = "~/.local/bin"
-            _cache = _xdg_cache or "~/.cache"
-            _runtime = _xdg_runtime or f"/run/user/{os.getuid()}"
-            _data_dirs = [_data] + (
+            _data = _xdg_data or _xdg_default_data
+            _config = _xdg_config or _xdg_default_config
+            _state = _xdg_state or _xdg_default_state
+            _app = _xdg_default_app
+            _cache = _xdg_cache or _xdg_default_cache
+            _runtime = _xdg_runtime or _xdg_default_runtime
+            _data_dirs = (
                 _xdg_data_dirs.split(":") if _xdg_data_dirs
-                else ["/usr/local/share/", "/usr/share/"]
+                else _xdg_default_data_dirs
             )
-            _config_dirs = [_config] + (
+            _config_dirs = (
                 _xdg_config_dirs.split(":") if _xdg_config_dirs
-                else ["/etc/xdg"]
+                else _xdg_config_dirs
             )
 
         case _:
             # Same as Linux for now
-            _data = _xdg_data or "~/.local/share"
-            _config = _xdg_config or "~/.config"
-            _state = _xdg_state or "~/.local/state"
-            _app = "~/.local/bin"
-            _cache = _xdg_cache or "~/.cache"
-            _runtime = _xdg_runtime or f"/run/user/{os.getuid()}"
-            _data_dirs = [_data] + (
+            _data = _xdg_data or _xdg_default_data
+            _config = _xdg_config or _xdg_default_config
+            _state = _xdg_state or _xdg_default_state
+            _app = _xdg_default_app
+            _cache = _xdg_cache or _xdg_default_cache
+            _runtime = _xdg_runtime or _xdg_default_runtime
+            _data_dirs = (
                 _xdg_data_dirs.split(":") if _xdg_data_dirs
-                else ["/usr/local/share/", "/usr/share/"]
+                else _xdg_default_data_dirs
             )
-            _config_dirs = [_config] + (
+            _config_dirs = (
                 _xdg_config_dirs.split(":") if _xdg_config_dirs
-                else ["/etc/xdg"]
+                else _xdg_config_dirs
             )
     
     @classmethod
@@ -102,8 +113,10 @@ class StandardPaths:
         return Path.home()
     
     @classmethod
-    def data(cls, local=False):
-        if local and sys.platform == "win32":
+    def data(cls, local=False, force_xdg=False):
+        if force_xdg:
+            return cls._xdg_data if cls._xdg_data else cls._xdg_default_data
+        elif local and sys.platform == "win32":
             if isinstance(cls._local_data, str):
                 cls._local_data = Path(cls._local_data).expanduser()
             return cls._local_data
@@ -129,6 +142,15 @@ class StandardPaths:
         if isinstance(cls._app, str):
             cls._app = Path(cls._app).expanduser()
         return cls._app
+    
+    @classmethod
+    def program_files(cls):
+        if sys.platform == "win32":
+            if isinstance(cls._win_program_files, str):
+                cls._win_program_files = Path(cls._win_program_files).expanduser()
+            return cls._win_program_files
+        else:
+            return cls.app()
 
     @classmethod
     def cache(cls):
@@ -143,14 +165,22 @@ class StandardPaths:
         return cls._runtime
 
     @classmethod
-    def data_dirs(cls):
+    def data_dirs(cls, include_home=False, local=False):
+        # Follow XDG spec and don't include user data home unless requested
         if isinstance(cls._data_dirs[0], str):
             cls._data_dirs = [Path(p).expanduser() for p in cls._data_dirs]
-        return cls._data_dirs
+        if include_home:
+            return [cls.data(local=local)] + cls._data_dirs
+        else:
+            return cls._data_dirs
 
     @classmethod
-    def config_dirs(cls):
+    def config_dirs(cls, include_home: False):
+        # Follow XDG spec and don't include user config home unless requested
         if isinstance(cls._config_dirs[0], str):
             cls._config_dirs = [Path(p).expanduser() for p in cls._config_dirs]
-        return cls._config_dirs
+        if include_home:
+            return [cls.config()] + cls._config_dirs
+        else:
+            return cls._config_dirs
 
