@@ -3,11 +3,11 @@ import sys
 from pathlib import Path
 
 
-class StandardPaths:
+class StandardPath:
 
     # Look for XDG env vars on all platforms - if someone has gone to the
-    # trouble to set them on e.g. Windows, presumably they would like them
-    # respected
+    # trouble to set them even on Windows or macOS, presumably they would like
+    # them respected
     _xdg_data = os.getenv("XDG_DATA_HOME")
     _xdg_config = os.getenv("XDG_CONFIG_HOME")
     _xdg_state = os.getenv("XDG_STATE_HOME")
@@ -16,6 +16,7 @@ class StandardPaths:
     _xdg_data_dirs = os.getenv("XDG_DATA_DIRS")
     _xdg_config_dirs = os.getenv("XDG_CONFIG_DIRS")
     
+    # Following https://specifications.freedesktop.org/basedir-spec/latest/
     _xdg_default_data = "~/.local/share"
     _xdg_default_config = "~/.config"
     _xdg_default_state = "~/.local/state"
@@ -113,10 +114,8 @@ class StandardPaths:
         return Path.home()
     
     @classmethod
-    def data(cls, local=False, force_xdg=False):
-        if force_xdg:
-            return cls._xdg_data if cls._xdg_data else cls._xdg_default_data
-        elif local and sys.platform == "win32":
+    def data(cls, local=False):
+        if local and sys.platform == "win32":
             if isinstance(cls._local_data, str):
                 cls._local_data = Path(cls._local_data).expanduser()
             return cls._local_data
