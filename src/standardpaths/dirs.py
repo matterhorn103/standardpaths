@@ -32,7 +32,7 @@ class StandardPath:
             # See https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
             _win_app_data = os.getenv("CSIDL_APPDATA")
             _win_local_app_data = os.getenv("CSIDL_LOCAL_APPDATA")
-            _win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
+            #_win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
             _win_programs = os.getenv("CSIDL_PROGRAMS")
             _win_tmp = os.getenv("TEMP")
 
@@ -142,14 +142,14 @@ class StandardPath:
             cls._app = Path(cls._app).expanduser()
         return cls._app
     
-    @classmethod
-    def program_files(cls):
-        if sys.platform == "win32":
-            if isinstance(cls._win_program_files, str):
-                cls._win_program_files = Path(cls._win_program_files).expanduser()
-            return cls._win_program_files
-        else:
-            return cls.app()
+    #@classmethod
+    #def program_files(cls):
+    #    if sys.platform == "win32":
+    #        if isinstance(cls._win_program_files, str):
+    #            cls._win_program_files = Path(cls._win_program_files).expanduser()
+    #        return cls._win_program_files
+    #    else:
+    #        raise RuntimeError("Program Files exists only on Windows!")
 
     @classmethod
     def cache(cls):
