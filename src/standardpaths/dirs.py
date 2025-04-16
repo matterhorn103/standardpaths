@@ -32,7 +32,7 @@ class StandardPath:
             # See https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
             _win_app_data = os.getenv("CSIDL_APPDATA")
             _win_local_app_data = os.getenv("CSIDL_LOCAL_APPDATA")
-            _win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
+            #_win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
             _win_programs = os.getenv("CSIDL_PROGRAMS")
             _win_tmp = os.getenv("TEMP")
 
@@ -55,7 +55,7 @@ class StandardPath:
         case "darwin":
             _data = _xdg_data or "~/Library/Application Support"
             _config = _xdg_config or "~/Library/Preferences"
-            _state = _xdg_state or "~/Library/Preferences/State"
+            _state = _xdg_state or "~/Library/Preferences/State" # Should really be ~/Library/Preferences/<APPNAME>/State
             _app = "/Applications"
             _cache = _xdg_cache or "~/Library/Caches"
             _runtime = _xdg_runtime or "~/Library/Application Support"
@@ -69,12 +69,40 @@ class StandardPath:
             )
 
         case "ios":
-            # TODO
-            pass
+            # On iOS, ~ (presumably) evaluates to within the app's sandbox
+            # This is fine as it aligns with QStandardPaths and platformdirs
+            _data = _xdg_data or "~/Library/Application Support"
+            _config = _xdg_config or "~/Library/Preferences"
+            _state = _xdg_state or "~/Library/Preferences/State"  # Mirror macOS
+            _app = _xdg_default_app  # This should maybe be unsupported on mobile
+            _cache = _xdg_cache or "~/Library/Caches"
+            _runtime = _xdg_runtime or "~/Library/Caches"  # With QStandardPaths this is unsupported
+            _data_dirs = (
+                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                else []
+            )
+            _config_dirs = (
+                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                else []
+            )
 
         case "android":
-            # TODO
-            pass
+            # On Android, ~ evaluates to within the app's sandbox
+            # This is fine as it aligns with QStandardPaths and platformdirs
+            _data = _xdg_data or "~/files"
+            _config = _xdg_config or "~/files/settings"
+            _state = _xdg_state or "~/files/state"
+            _app = _xdg_default_app  # This should maybe be unsupported on mobile
+            _cache = _xdg_cache or "~/cache"
+            _runtime = _xdg_runtime or "~/cache"
+            _data_dirs = (
+                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                else []
+            )
+            _config_dirs = (
+                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                else []
+            )
 
         case "linux":
             _data = _xdg_data or _xdg_default_data
@@ -142,14 +170,14 @@ class StandardPath:
             cls._app = Path(cls._app).expanduser()
         return cls._app
     
-    @classmethod
-    def program_files(cls):
-        if sys.platform == "win32":
-            if isinstance(cls._win_program_files, str):
-                cls._win_program_files = Path(cls._win_program_files).expanduser()
-            return cls._win_program_files
-        else:
-            return cls.app()
+    #@classmethod
+    #def program_files(cls):
+    #    if sys.platform == "win32":
+    #        if isinstance(cls._win_program_files, str):
+    #            cls._win_program_files = Path(cls._win_program_files).expanduser()
+    #        return cls._win_program_files
+    #    else:
+    #        raise RuntimeError("Program Files exists only on Windows!")
 
     @classmethod
     def cache(cls):
@@ -166,7 +194,8 @@ class StandardPath:
     @classmethod
     def data_dirs(cls, include_home=False, local=False):
         # Follow XDG spec and don't include user data home unless requested
-        if isinstance(cls._data_dirs[0], str):
+        # Would be more convenient if `include_home=True` by default though...
+        if cls._data_dirs and isinstance(cls._data_dirs[0], str):
             cls._data_dirs = [Path(p).expanduser() for p in cls._data_dirs]
         if include_home:
             return [cls.data(local=local)] + cls._data_dirs
@@ -174,9 +203,10 @@ class StandardPath:
             return cls._data_dirs
 
     @classmethod
-    def config_dirs(cls, include_home: False):
+    def config_dirs(cls, include_home=False):
         # Follow XDG spec and don't include user config home unless requested
-        if isinstance(cls._config_dirs[0], str):
+        # Would be more convenient if `include_home=True` by default though...
+        if cls._config_dirs and isinstance(cls._config_dirs[0], str):
             cls._config_dirs = [Path(p).expanduser() for p in cls._config_dirs]
         if include_home:
             return [cls.config()] + cls._config_dirs
