@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-class StandardPath:
+class StandardPaths:
 
     # Look for XDG env vars on all platforms - if someone has gone to the
     # trouble to set them even on Windows or macOS, presumably they would like
@@ -136,7 +136,7 @@ class StandardPath:
                 _xdg_config_dirs.split(":") if _xdg_config_dirs
                 else _xdg_config_dirs
             )
-    
+
     @classmethod
     def home(cls):
         return Path.home()
