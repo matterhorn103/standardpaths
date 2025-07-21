@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-class StandardPaths:
+class StandardPath:
 
     # Look for XDG env vars on all platforms - if someone has gone to the
     # trouble to set them even on Windows or macOS, presumably they would like
@@ -205,13 +205,17 @@ class StandardPaths:
             return [cls.config(app_name=app_name)] + dirs
         else:
             return dirs
-        
+
+
+class StandardPaths:
+
     def __init__(self, app_name: str, include_home=False, local=False):
-        self.data = StandardPaths.data(app_name=app_name, local=local)
-        self.config = StandardPaths.config(app_name=app_name)
-        self.state = StandardPaths.state(app_name=app_name)
-        self.app = StandardPaths.app()
-        self.cache = StandardPaths.cache(app_name=app_name)
-        self.runtime = StandardPaths.runtime()
-        self.data_dirs = StandardPaths.data_dirs(app_name=app_name, include_home=include_home, local=local)
-        self.config_dirs = StandardPaths.config_dirs(app_name=app_name, include_home=include_home)
+        self.home = StandardPath.home()
+        self.data = StandardPath.data(app_name=app_name, local=local)
+        self.config = StandardPath.config(app_name=app_name)
+        self.state = StandardPath.state(app_name=app_name)
+        self.app = StandardPath.app()
+        self.cache = StandardPath.cache(app_name=app_name)
+        self.runtime = StandardPath.runtime()
+        self.data_dirs = StandardPath.data_dirs(app_name=app_name, include_home=include_home, local=local)
+        self.config_dirs = StandardPath.config_dirs(app_name=app_name, include_home=include_home)
