@@ -4,7 +4,6 @@ from pathlib import Path
 
 
 class StandardPaths:
-
     # Look for XDG env vars on all platforms - if someone has gone to the
     # trouble to set them even on Windows or macOS, presumably they would like
     # them respected
@@ -15,7 +14,7 @@ class StandardPaths:
     _xdg_runtime = os.getenv("XDG_RUNTIME_HOME")
     _xdg_data_dirs = os.getenv("XDG_DATA_DIRS")
     _xdg_config_dirs = os.getenv("XDG_CONFIG_DIRS")
-    
+
     # Following https://specifications.freedesktop.org/basedir-spec/latest/
     _xdg_default_data = "~/.local/share"
     _xdg_default_config = "~/.config"
@@ -32,40 +31,45 @@ class StandardPaths:
             # See https://learn.microsoft.com/en-us/windows/deployment/usmt/usmt-recognized-environment-variables
             _win_app_data = os.getenv("CSIDL_APPDATA")
             _win_local_app_data = os.getenv("CSIDL_LOCAL_APPDATA")
-            #_win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
+            # _win_program_files = os.getenv("CSIDL_PROGRAM_FILES")
             _win_programs = os.getenv("CSIDL_PROGRAMS")
             _win_tmp = os.getenv("TEMP")
 
             _data = _xdg_data or _win_app_data or "~/AppData/Roaming"
             _local_data = _win_local_app_data or "~/AppData/Local"
             _config = _xdg_config or _local_data
-            _state = _xdg_state or _local_data # /<APPNAME>/State
-            _app = _win_programs or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
+            _state = _xdg_state or _local_data  # /<APPNAME>/State
+            _app = (
+                _win_programs
+                or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
+            )
             _cache = _xdg_cache or _local_data + "/cache"
             _runtime = _xdg_runtime or _win_tmp or _local_data + "/Temp"
             _data_dirs = (
-                _xdg_data_dirs.split(";") if _xdg_data_dirs
+                _xdg_data_dirs.split(";")
+                if _xdg_data_dirs
                 else ["C:/ProgramData"]
             )
             _config_dirs = (
-                _xdg_config_dirs.split(";") if _xdg_config_dirs
+                _xdg_config_dirs.split(";")
+                if _xdg_config_dirs
                 else ["C:/ProgramData"]
             )
 
         case "darwin":
             _data = _xdg_data or "~/Library/Application Support"
             _config = _xdg_config or "~/Library/Preferences"
-            _state = _xdg_state or "~/Library/Preferences" # /<APPNAME>/State
+            _state = _xdg_state or "~/Library/Preferences"  # /<APPNAME>/State
             _app = "/Applications"
             _cache = _xdg_cache or "~/Library/Caches"
             _runtime = _xdg_runtime or "~/Library/Application Support"
             _data_dirs = (
-                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                _xdg_data_dirs.split(":")
+                if _xdg_data_dirs
                 else ["/Library/Application Support"]
             )
             _config_dirs = (
-                _xdg_config_dirs.split(":") if _xdg_config_dirs
-                else []
+                _xdg_config_dirs.split(":") if _xdg_config_dirs else []
             )
 
         case "ios":
@@ -74,16 +78,14 @@ class StandardPaths:
             _data = _xdg_data or "~/Library/Application Support"
             _config = _xdg_config or "~/Library/Preferences"
             _state = _xdg_state or "~/Library/Preferences"  # Mirror macOS
-            _app = _xdg_default_app  # This should maybe be unsupported on mobile
+            _app = _xdg_default_app  # Should this be supported on mobile?
             _cache = _xdg_cache or "~/Library/Caches"
-            _runtime = _xdg_runtime or "~/Library/Caches"  # With QStandardPaths this is unsupported
-            _data_dirs = (
-                _xdg_data_dirs.split(":") if _xdg_data_dirs
-                else []
-            )
+            _runtime = (
+                _xdg_runtime or "~/Library/Caches"
+            )  # Unsupported in QStandardPaths
+            _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else []
             _config_dirs = (
-                _xdg_config_dirs.split(":") if _xdg_config_dirs
-                else []
+                _xdg_config_dirs.split(":") if _xdg_config_dirs else []
             )
 
         case "android":
@@ -92,16 +94,12 @@ class StandardPaths:
             _data = _xdg_data or "~/files"
             _config = _xdg_config or "~/files/settings"
             _state = _xdg_state or "~/files/state"
-            _app = _xdg_default_app  # This should maybe be unsupported on mobile
+            _app = _xdg_default_app  # Should this be supported on mobile?
             _cache = _xdg_cache or "~/cache"
             _runtime = _xdg_runtime or "~/cache"
-            _data_dirs = (
-                _xdg_data_dirs.split(":") if _xdg_data_dirs
-                else []
-            )
+            _data_dirs = _xdg_data_dirs.split(":") if _xdg_data_dirs else []
             _config_dirs = (
-                _xdg_config_dirs.split(":") if _xdg_config_dirs
-                else []
+                _xdg_config_dirs.split(":") if _xdg_config_dirs else []
             )
 
         case "linux":
@@ -112,11 +110,13 @@ class StandardPaths:
             _cache = _xdg_cache or _xdg_default_cache
             _runtime = _xdg_runtime or _xdg_default_runtime
             _data_dirs = (
-                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                _xdg_data_dirs.split(":")
+                if _xdg_data_dirs
                 else _xdg_default_data_dirs
             )
             _config_dirs = (
-                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                _xdg_config_dirs.split(":")
+                if _xdg_config_dirs
                 else _xdg_config_dirs
             )
 
@@ -129,18 +129,20 @@ class StandardPaths:
             _cache = _xdg_cache or _xdg_default_cache
             _runtime = _xdg_runtime or _xdg_default_runtime
             _data_dirs = (
-                _xdg_data_dirs.split(":") if _xdg_data_dirs
+                _xdg_data_dirs.split(":")
+                if _xdg_data_dirs
                 else _xdg_default_data_dirs
             )
             _config_dirs = (
-                _xdg_config_dirs.split(":") if _xdg_config_dirs
+                _xdg_config_dirs.split(":")
+                if _xdg_config_dirs
                 else _xdg_config_dirs
             )
 
     @classmethod
     def home(cls):
         return Path.home()
-    
+
     @classmethod
     def data(
         cls,
@@ -156,7 +158,7 @@ class StandardPaths:
             return Path(cls._local_data, app_name).expanduser()
         else:
             return Path(cls._data, app_name).expanduser()
-    
+
     @classmethod
     def config(
         cls,
@@ -188,9 +190,9 @@ class StandardPaths:
     @classmethod
     def app(cls):
         return Path(cls._app).expanduser()
-    
-    #@classmethod
-    #def program_files(cls):
+
+    # @classmethod
+    # def program_files(cls):
     #    if sys.platform == "win32":
     #        if isinstance(cls._win_program_files, str):
     #            cls._win_program_files = Path(cls._win_program_files).expanduser()
@@ -245,7 +247,7 @@ class StandardPaths:
             return [cls.config(app_name=app_name)] + dirs
         else:
             return dirs
-        
+
     def __init__(
         self,
         app_name: str,
@@ -253,11 +255,19 @@ class StandardPaths:
         include_home: bool = False,
         local: bool = False,
     ):
-        self.data = StandardPaths.data(app_name=app_name, force_xdg=force_xdg, local=local)
-        self.config = StandardPaths.config(app_name=app_name, force_xdg=force_xdg)
+        self.data = StandardPaths.data(
+            app_name=app_name, force_xdg=force_xdg, local=local
+        )
+        self.config = StandardPaths.config(
+            app_name=app_name, force_xdg=force_xdg
+        )
         self.state = StandardPaths.state(app_name=app_name, force_xdg=force_xdg)
         self.app = StandardPaths.app()
         self.cache = StandardPaths.cache(app_name=app_name, force_xdg=force_xdg)
         self.runtime = StandardPaths.runtime()
-        self.data_dirs = StandardPaths.data_dirs(app_name=app_name, include_home=include_home, local=local)
-        self.config_dirs = StandardPaths.config_dirs(app_name=app_name, include_home=include_home)
+        self.data_dirs = StandardPaths.data_dirs(
+            app_name=app_name, include_home=include_home, local=local
+        )
+        self.config_dirs = StandardPaths.config_dirs(
+            app_name=app_name, include_home=include_home
+        )
