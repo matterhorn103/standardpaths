@@ -1,1 +1,1 @@
-from .dirs import StandardPath
+from .dirs import StandardPaths
