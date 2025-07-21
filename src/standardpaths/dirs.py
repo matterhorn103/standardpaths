@@ -142,7 +142,7 @@ class StandardPaths:
         return Path.home()
     
     @classmethod
-    def data(cls, app_name: str = None, local=False):
+    def data(cls, app_name: str | None = None, local=False):
         app_name = app_name if app_name else ""
         if local and sys.platform == "win32":
             return Path(cls._local_data, app_name).expanduser()
@@ -150,12 +150,12 @@ class StandardPaths:
             return Path(cls._data, app_name).expanduser()
     
     @classmethod
-    def config(cls, app_name: str = None):
+    def config(cls, app_name: str | None = None):
         app_name = app_name if app_name else ""
         return Path(cls._config, app_name).expanduser()
 
     @classmethod
-    def state(cls, app_name: str = None):
+    def state(cls, app_name: str | None = None):
         app_name = app_name if app_name else ""
         if sys.platform in ["win32", "darwin", "ios"]:
             return Path(cls._state, app_name, "State").expanduser()
@@ -176,7 +176,7 @@ class StandardPaths:
     #        raise RuntimeError("Program Files exists only on Windows!")
 
     @classmethod
-    def cache(cls, app_name: str = None):
+    def cache(cls, app_name: str | None = None):
         app_name = app_name if app_name else ""
         return Path(cls._cache, app_name).expanduser()
 
@@ -185,7 +185,7 @@ class StandardPaths:
         return Path(cls._runtime).expanduser()
 
     @classmethod
-    def data_dirs(cls, app_name: str = None, include_home=False, local=False):
+    def data_dirs(cls, app_name: str | None = None, include_home=False, local=False):
         app_name = app_name if app_name else ""
         # Follow XDG spec and don't include user data home unless requested
         # Would be more convenient if `include_home=True` by default though...
@@ -196,7 +196,7 @@ class StandardPaths:
             return dirs
 
     @classmethod
-    def config_dirs(cls, app_name: str = None, include_home=False):
+    def config_dirs(cls, app_name: str | None = None, include_home=False):
         app_name = app_name if app_name else ""
         # Follow XDG spec and don't include user config home unless requested
         # Would be more convenient if `include_home=True` by default though...
@@ -206,12 +206,12 @@ class StandardPaths:
         else:
             return dirs
         
-    def __init__(self, app_name: str):
-        self.data = self.data(app_name=app_name)
+    def __init__(self, app_name: str, include_home=False, local=False):
+        self.data = self.data(app_name=app_name, local=local)
         self.config = self.config(app_name=app_name)
         self.state = self.state(app_name=app_name)
         self.app = self.app()
         self.cache = self.cache(app_name=app_name)
         self.runtime = self.runtime()
-        self.data_dirs = self.data_dirs(app_name=app_name)
-        self.config_dirs = self.config_dirs(app_name=app_name)
+        self.data_dirs = self.data_dirs(app_name=app_name, include_home=include_home, local=local)
+        self.config_dirs = self.config_dirs(app_name=app_name, include_home=include_home)
