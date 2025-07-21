@@ -207,11 +207,11 @@ class StandardPaths:
             return dirs
         
     def __init__(self, app_name: str, include_home=False, local=False):
-        self.data = self.data(app_name=app_name, local=local)
-        self.config = self.config(app_name=app_name)
-        self.state = self.state(app_name=app_name)
-        self.app = self.app()
-        self.cache = self.cache(app_name=app_name)
-        self.runtime = self.runtime()
-        self.data_dirs = self.data_dirs(app_name=app_name, include_home=include_home, local=local)
-        self.config_dirs = self.config_dirs(app_name=app_name, include_home=include_home)
+        self.data = StandardPaths.data(app_name=app_name, local=local)
+        self.config = StandardPaths.config(app_name=app_name)
+        self.state = StandardPaths.state(app_name=app_name)
+        self.app = StandardPaths.app()
+        self.cache = StandardPaths.cache(app_name=app_name)
+        self.runtime = StandardPaths.runtime()
+        self.data_dirs = StandardPaths.data_dirs(app_name=app_name, include_home=include_home, local=local)
+        self.config_dirs = StandardPaths.config_dirs(app_name=app_name, include_home=include_home)
