@@ -41,7 +41,7 @@ class StandardPaths:
             _config = _xdg_config or _local_data
             _state = _xdg_state or _local_data # /<APPNAME>/State
             _app = _win_programs or "~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"
-            _cache = _xdg_cache or  _local_data + "/cache"
+            _cache = _xdg_cache or _local_data + "/cache"
             _runtime = _xdg_runtime or _win_tmp or _local_data + "/Temp"
             _data_dirs = (
                 _xdg_data_dirs.split(";") if _xdg_data_dirs
@@ -142,22 +142,45 @@ class StandardPaths:
         return Path.home()
     
     @classmethod
-    def data(cls, app_name: str | None = None, local=False):
+    def data(
+        cls,
+        app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
+        local: bool = False,
+    ):
         app_name = app_name if app_name else ""
-        if local and sys.platform == "win32":
+        if force_xdg and (force_xdg is True or sys.platform in force_xdg):
+            data = cls._xdg_data or cls._xdg_default_data
+            return Path(data, app_name).expanduser()
+        elif local and sys.platform == "win32":
             return Path(cls._local_data, app_name).expanduser()
         else:
             return Path(cls._data, app_name).expanduser()
     
     @classmethod
-    def config(cls, app_name: str | None = None):
+    def config(
+        cls,
+        app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
+    ):
         app_name = app_name if app_name else ""
-        return Path(cls._config, app_name).expanduser()
+        if force_xdg and (force_xdg is True or sys.platform in force_xdg):
+            config = cls._xdg_config or cls._xdg_default_config
+            return Path(config, app_name).expanduser()
+        else:
+            return Path(cls._config, app_name).expanduser()
 
     @classmethod
-    def state(cls, app_name: str | None = None):
+    def state(
+        cls,
+        app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
+    ):
         app_name = app_name if app_name else ""
-        if sys.platform in ["win32", "darwin", "ios"]:
+        if force_xdg and (force_xdg is True or sys.platform in force_xdg):
+            state = cls._xdg_state or cls._xdg_default_state
+            return Path(state, app_name).expanduser()
+        elif sys.platform in ["win32", "darwin", "ios"]:
             return Path(cls._state, app_name, "State").expanduser()
         else:
             return Path(cls._state, app_name).expanduser()
@@ -176,16 +199,29 @@ class StandardPaths:
     #        raise RuntimeError("Program Files exists only on Windows!")
 
     @classmethod
-    def cache(cls, app_name: str | None = None):
+    def cache(
+        cls,
+        app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
+    ):
         app_name = app_name if app_name else ""
-        return Path(cls._cache, app_name).expanduser()
+        if force_xdg and (force_xdg is True or sys.platform in force_xdg):
+            cache = cls._xdg_cache or cls._xdg_default_cache
+            return Path(cache, app_name).expanduser()
+        else:
+            return Path(cls._cache, app_name).expanduser()
 
     @classmethod
     def runtime(cls):
         return Path(cls._runtime).expanduser()
 
     @classmethod
-    def data_dirs(cls, app_name: str | None = None, include_home=False, local=False):
+    def data_dirs(
+        cls,
+        app_name: str | None = None,
+        include_home=False,
+        local=False,
+    ):
         app_name = app_name if app_name else ""
         # Follow XDG spec and don't include user data home unless requested
         # Would be more convenient if `include_home=True` by default though...
@@ -196,7 +232,11 @@ class StandardPaths:
             return dirs
 
     @classmethod
-    def config_dirs(cls, app_name: str | None = None, include_home=False):
+    def config_dirs(
+        cls,
+        app_name: str | None = None,
+        include_home=False,
+    ):
         app_name = app_name if app_name else ""
         # Follow XDG spec and don't include user config home unless requested
         # Would be more convenient if `include_home=True` by default though...
@@ -206,12 +246,18 @@ class StandardPaths:
         else:
             return dirs
         
-    def __init__(self, app_name: str, include_home=False, local=False):
-        self.data = StandardPaths.data(app_name=app_name, local=local)
-        self.config = StandardPaths.config(app_name=app_name)
-        self.state = StandardPaths.state(app_name=app_name)
+    def __init__(
+        self,
+        app_name: str,
+        force_xdg: bool | list[str] = False,
+        include_home: bool = False,
+        local: bool = False,
+    ):
+        self.data = StandardPaths.data(app_name=app_name, force_xdg=force_xdg, local=local)
+        self.config = StandardPaths.config(app_name=app_name, force_xdg=force_xdg)
+        self.state = StandardPaths.state(app_name=app_name, force_xdg=force_xdg)
         self.app = StandardPaths.app()
-        self.cache = StandardPaths.cache(app_name=app_name)
+        self.cache = StandardPaths.cache(app_name=app_name, force_xdg=force_xdg)
         self.runtime = StandardPaths.runtime()
         self.data_dirs = StandardPaths.data_dirs(app_name=app_name, include_home=include_home, local=local)
         self.config_dirs = StandardPaths.config_dirs(app_name=app_name, include_home=include_home)
