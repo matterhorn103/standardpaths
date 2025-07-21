@@ -221,6 +221,7 @@ class StandardPaths:
     def data_dirs(
         cls,
         app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
         include_home=False,
         local=False,
     ):
@@ -229,7 +230,9 @@ class StandardPaths:
         # Would be more convenient if `include_home=True` by default though...
         dirs = [Path(p, app_name).expanduser() for p in cls._data_dirs]
         if include_home:
-            return [cls.data(app_name=app_name, local=local)] + dirs
+            return [
+                cls.data(app_name=app_name, force_xdg=force_xdg, local=local)
+            ] + dirs
         else:
             return dirs
 
@@ -237,6 +240,7 @@ class StandardPaths:
     def config_dirs(
         cls,
         app_name: str | None = None,
+        force_xdg: bool | list[str] = False,
         include_home=False,
     ):
         app_name = app_name if app_name else ""
@@ -244,7 +248,7 @@ class StandardPaths:
         # Would be more convenient if `include_home=True` by default though...
         dirs = [Path(p, app_name).expanduser() for p in cls._config_dirs]
         if include_home:
-            return [cls.config(app_name=app_name)] + dirs
+            return [cls.config(app_name=app_name, force_xdg=force_xdg)] + dirs
         else:
             return dirs
 
@@ -261,13 +265,20 @@ class StandardPaths:
         self.config = StandardPaths.config(
             app_name=app_name, force_xdg=force_xdg
         )
-        self.state = StandardPaths.state(app_name=app_name, force_xdg=force_xdg)
+        self.state = StandardPaths.state(
+            app_name=app_name, force_xdg=force_xdg
+        )
         self.app = StandardPaths.app()
-        self.cache = StandardPaths.cache(app_name=app_name, force_xdg=force_xdg)
+        self.cache = StandardPaths.cache(
+            app_name=app_name, force_xdg=force_xdg
+        )
         self.runtime = StandardPaths.runtime()
         self.data_dirs = StandardPaths.data_dirs(
-            app_name=app_name, include_home=include_home, local=local
+            app_name=app_name,
+            force_xdg=force_xdg,
+            include_home=include_home,
+            local=local,
         )
         self.config_dirs = StandardPaths.config_dirs(
-            app_name=app_name, include_home=include_home
+            app_name=app_name, force_xdg=force_xdg, include_home=include_home
         )
